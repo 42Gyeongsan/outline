@@ -117,12 +117,14 @@ export default class Embed extends Node {
     const { embeds, embedsDisabled } = this.editor.props;
 
     return (
-      <EmbedComponent
-        {...props}
-        embeds={embeds}
-        embedsDisabled={embedsDisabled}
-        onChangeSize={this.handleChangeSize(props)}
-      />
+      <React.Suspense fallback={null}>
+        <EmbedComponent
+          {...props}
+          embeds={embeds}
+          embedsDisabled={embedsDisabled}
+          onChangeSize={this.handleChangeSize(props)}
+        />
+      </React.Suspense>
     );
   };
 

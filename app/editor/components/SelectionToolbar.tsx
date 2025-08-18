@@ -21,6 +21,7 @@ import getDividerMenuItems from "../menus/divider";
 import getFormattingMenuItems from "../menus/formatting";
 import getImageMenuItems from "../menus/image";
 import getNoticeMenuItems from "../menus/notice";
+
 import getReadOnlyMenuItems from "../menus/readOnly";
 import getTableMenuItems from "../menus/table";
 import getTableCellMenuItems from "../menus/tableCell";
@@ -72,7 +73,7 @@ function useIsActive(state: EditorState) {
   }
   if (
     selection instanceof NodeSelection &&
-    ["image", "attachment", "embed"].includes(selection.node.type.name)
+    ["image", "attachment"].includes(selection.node.type.name)
   ) {
     return true;
   }
@@ -195,6 +196,7 @@ export default function SelectionToolbar(props: Props) {
     selection.node.type.name === "attachment";
   const isEmbedSelection =
     selection instanceof NodeSelection && selection.node.type.name === "embed";
+
   const isCodeSelection = isInCode(state, { onlyBlock: true });
   const isNoticeSelection = isInNotice(state);
 

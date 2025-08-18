@@ -55,7 +55,7 @@ export default function createCSPMiddleware() {
         frameSrc: ["*", "data:"],
         // Do not use connect-src: because self + websockets does not work in
         // Safari, ref: https://bugs.webkit.org/show_bug.cgi?id=201591
-        connectSrc: ["*"],
+        connectSrc: ["*", "blob:"],
       },
     })(ctx, next);
   };

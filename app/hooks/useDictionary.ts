@@ -36,6 +36,7 @@ export default function useDictionary() {
       deleteTable: t("Delete table"),
       deleteAttachment: t("Delete file"),
       dimensions: t("Width x Height"),
+      preview: t("Preview"),
       download: t("Download"),
       downloadAttachment: t("Download file"),
       replaceAttachment: t("Replace file"),

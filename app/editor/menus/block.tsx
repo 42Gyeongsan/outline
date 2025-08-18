@@ -115,6 +115,18 @@ export default function blockMenuItems(
       keywords: "mov avi upload player",
     },
     {
+      name: "hwp",
+      title: "HWP Document",
+      icon: <AttachmentIcon />,
+      keywords: "hwp document file",
+    },
+    {
+      name: "pdf",
+      title: "PDF Document",
+      icon: <AttachmentIcon />,
+      keywords: "pdf document preview",
+    },
+    {
       name: "attachment",
       title: dictionary.file,
       icon: <AttachmentIcon />,

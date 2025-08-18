@@ -1,10 +1,13 @@
 import { Token } from "markdown-it";
-import { DownloadIcon } from "outline-icons";
+import { DownloadIcon, CaretDownIcon, CaretUpIcon } from "outline-icons";
 import { NodeSpec, NodeType, Node as ProsemirrorNode } from "prosemirror-model";
 import { Command, NodeSelection } from "prosemirror-state";
 import * as React from "react";
+import { useState } from "react";
 import { Trans } from "react-i18next";
+import styled from "styled-components";
 import { Primitive } from "utility-types";
+import { s } from "../../styles";
 import { bytesToHumanReadable, getEventFiles } from "../../utils/files";
 import { sanitizeUrl } from "../../utils/urls";
 import insertFiles from "../commands/insertFiles";
@@ -15,6 +18,8 @@ import { MarkdownSerializerState } from "../lib/markdown/serializer";
 import attachmentsRule from "../rules/links";
 import { ComponentProps } from "../types";
 import Node from "./Node";
+
+const PdfComponent = React.lazy(() => import("../components/PdfComponent"));
 
 export default class Attachment extends Node {
   get name() {
@@ -80,35 +85,55 @@ export default class Attachment extends Node {
 
   component = (props: ComponentProps) => {
     const { isSelected, isEditable, theme, node } = props;
+    const [preview, setPreview] = useState(false);
+    const isPdf = node.attrs.title?.toLowerCase().endsWith(".pdf");
+
     return (
-      <Widget
-        icon={<FileExtension title={node.attrs.title} />}
-        href={node.attrs.href}
-        title={node.attrs.title}
-        onMouseDown={this.handleSelect(props)}
-        onDoubleClick={() => {
-          this.editor.commands.downloadAttachment();
-        }}
-        onClick={(event) => {
-          if (isEditable) {
-            event.preventDefault();
-            event.stopPropagation();
+      <>
+        <Widget
+          icon={<FileExtension title={node.attrs.title} />}
+          href={node.attrs.href}
+          title={node.attrs.title}
+          onMouseDown={this.handleSelect(props)}
+          onDoubleClick={() => {
+            this.editor.commands.downloadAttachment();
+          }}
+          onClick={(event) => {
+            if (isEditable) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          }}
+          context={
+            node.attrs.href ? (
+              <div>{bytesToHumanReadable(node.attrs.size || "0")}</div>
+            ) : (
+              <>
+                <Trans>Uploading</Trans>…
+              </>
+            )
           }
-        }}
-        context={
-          node.attrs.href ? (
-            bytesToHumanReadable(node.attrs.size || "0")
-          ) : (
-            <>
-              <Trans>Uploading</Trans>…
-            </>
-          )
-        }
-        isSelected={isSelected}
-        theme={theme}
-      >
-        {node.attrs.href && !isEditable && <DownloadIcon size={20} />}
-      </Widget>
+          isSelected={isSelected}
+          theme={theme}
+        >
+          {node.attrs.href && !isEditable && <DownloadIcon size={20} />}
+        </Widget>
+        {isPdf && (
+          <div
+            style={{ marginTop: "4px" }}
+            onClick={() => setPreview(!preview)}
+          >
+            {
+              <div>
+                {preview && <PdfComponent {...props} />}
+                <PreviewToggle onClick={() => setPreview(!preview)}>
+                  {preview ? <CaretUpIcon /> : <CaretDownIcon />}
+                </PreviewToggle>
+              </div>
+            }
+          </div>
+        )}
+      </>
     );
   };
 
@@ -192,3 +217,24 @@ export default class Attachment extends Node {
     };
   }
 }
+
+const PreviewToggle = styled.a`
+  display: flex;
+  flexDirection: 'column',
+  width: 100%;
+  background: ${s("background")};
+  color: ${s("text")} !important;
+  box-shadow: 0 0 0 1px ${s("divider")};
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: ${(props) => props.theme.background};
+
+  &:hover {
+    background: ${(props) => props.theme.backgroundSecondary};
+  }
+`;

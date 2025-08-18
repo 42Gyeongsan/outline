@@ -5,6 +5,7 @@ import browserslistToEsbuild from "browserslist-to-esbuild";
 import webpackStats from "rollup-plugin-webpack-stats";
 import { ServerOptions, defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 import environment from "./server/utils/environment";
 
 let httpsConfig: ServerOptions["https"] | undefined;
@@ -26,6 +27,9 @@ if (environment.NODE_ENV === "development") {
 
 export default () =>
   defineConfig({
+    define: {
+      "process.env": {},
+    },
     root: "./",
     publicDir: "./server/static",
     base: (environment.CDN_URL ?? "") + "/static/",
@@ -45,6 +49,19 @@ export default () =>
     },
     plugins: [
       react(),
+      // https://github.com/sapphi-red/vite-plugin-static-copy#readme
+      viteStaticCopy({
+        targets: [
+          {
+            src: "./public/images",
+            dest: "./",
+          },
+          {
+            src: "./node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+            dest: "./scripts",
+          },
+        ],
+      }),
       // https://vite-pwa-org.netlify.app/
       VitePWA({
         injectRegister: "inline",
@@ -127,8 +144,14 @@ export default () =>
       // Generate a stats.json file for webpack that will be consumed by RelativeCI
       webpackStats(),
     ],
-    experimental: {
-      enableNativePlugin: true,
+    optimizeDeps: {
+      esbuildOptions: {
+        keepNames: true,
+        define: {
+          global: "globalThis",
+          "process.env": "{}",
+        },
+      },
     },
     resolve: {
       alias: {
