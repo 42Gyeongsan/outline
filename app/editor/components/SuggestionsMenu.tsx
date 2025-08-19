@@ -271,8 +271,6 @@ function SuggestionsMenu<T extends MenuItem>(props: Props<T>) {
           );
         case "video":
           return triggerFilePick("video/*");
-        case "hwp":
-          return triggerFilePick(".hwp");
         case "pdf":
           return triggerFilePick(".pdf");
         case "attachment":

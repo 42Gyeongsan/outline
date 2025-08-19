@@ -65,10 +65,6 @@ const insertFiles = async function (
         FileHelper.isVideo(file.type) &&
         !options.isAttachment &&
         !!schema.nodes.video;
-      const isHwp =
-        file.name.endsWith(".hwp") &&
-        !options.isAttachment &&
-        !!schema.nodes.hwp;
       const isPdf =
         (file.type === "application/pdf" || file.name.endsWith(".pdf")) &&
         !options.isAttachment &&
@@ -84,7 +80,6 @@ const insertFiles = async function (
         dimensions: await getDimensions?.(file),
         isImage,
         isVideo,
-        isHwp,
         isPdf,
         file,
       };
@@ -169,29 +164,6 @@ const insertFiles = async function (
                   title: upload.file.name ?? dictionary.untitled,
                   ...upload.dimensions,
                   ...options.attrs,
-                })
-              )
-              .setMeta(uploadPlaceholderPlugin, { remove: { id: upload.id } })
-          );
-        } else if (upload.isHwp) {
-          const result = findPlaceholder(view.state, upload.id);
-          if (result === null) {
-            return;
-          }
-
-          const [from, to] = result;
-
-          if (view.isDestroyed) {
-            return;
-          }
-
-          view.dispatch(
-            view.state.tr
-              .replaceWith(
-                from,
-                to || from,
-                schema.nodes.hwp.create({
-                  src,
                 })
               )
               .setMeta(uploadPlaceholderPlugin, { remove: { id: upload.id } })

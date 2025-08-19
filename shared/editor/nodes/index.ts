@@ -26,7 +26,6 @@ import Emoji from "./Emoji";
 import HardBreak from "./HardBreak";
 import Heading from "./Heading";
 import HorizontalRule from "./HorizontalRule";
-import Hwp from "./Hwp";
 import Image from "./Image";
 import ListItem from "./ListItem";
 import Math from "./Math";
@@ -100,8 +99,6 @@ export const richExtensions: Nodes = [
   Embed,
   Attachment,
   Video,
-  Hwp,
-
   Notice,
   Heading,
   HorizontalRule,

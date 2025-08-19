@@ -758,20 +758,7 @@
     lru-cache "^5.1.1"
     semver "^6.3.1"
 
-"@babel/helper-create-class-features-plugin@^7.27.1":
-  version "7.27.1"
-  resolved "https://registry.yarnpkg.com/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.27.1.tgz#5bee4262a6ea5ddc852d0806199eb17ca3de9281"
-  integrity sha512-QwGAmuvM17btKU5VqXfb+Giw4JcN0hjuufz3DYnpeVDvZLAObloM77bhMXiqry3Iio+Ai4phVRDwl6WU10+r5A==
-  dependencies:
-    "@babel/helper-annotate-as-pure" "^7.27.1"
-    "@babel/helper-member-expression-to-functions" "^7.27.1"
-    "@babel/helper-optimise-call-expression" "^7.27.1"
-    "@babel/helper-replace-supers" "^7.27.1"
-    "@babel/helper-skip-transparent-expression-wrappers" "^7.27.1"
-    "@babel/traverse" "^7.27.1"
-    semver "^6.3.1"
-
-"@babel/helper-create-class-features-plugin@^7.28.3":
+"@babel/helper-create-class-features-plugin@^7.27.1", "@babel/helper-create-class-features-plugin@^7.28.3":
   version "7.28.3"
   resolved "https://registry.yarnpkg.com/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.28.3.tgz#3e747434ea007910c320c4d39a6b46f20f371d46"
   integrity sha512-V9f6ZFIYSLNEbuGA/92uOvYsGCJNsuA8ESZ4ldc09bWk/j8H8TKiPw8Mk1eG6olpnO0ALHJmYfZvF4MEE4gajg==
@@ -9161,14 +9148,6 @@ husky@^8.0.3:
   version "8.0.3"
   resolved "https://registry.yarnpkg.com/husky/-/husky-8.0.3.tgz#4936d7212e46d1dea28fef29bb3a108872cd9184"
   integrity sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==
-
-hwp.js@^0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/hwp.js/-/hwp.js-0.0.3.tgz#0e993711bad76b904777f986d3048aa8d38118d7"
-  integrity sha512-qVdQjpyfR2rVmfZbbqd/8LAtt8YbwtZ2vm9FkBJj1UGPTP0Zs9+miUDrsPSfARpqkx3L7NeI1qR6hag5DaicyQ==
-  dependencies:
-    cfb "^1.2.0"
-    pako "^1.0.11"
 
 i18next-fs-backend@^2.6.0:
   version "2.6.0"
