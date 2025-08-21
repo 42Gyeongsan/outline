@@ -1,5 +1,5 @@
 import { differenceInMilliseconds } from "date-fns";
-import { action } from "mobx";
+import { runInAction } from "mobx";
 import { observer } from "mobx-react";
 import { DoneIcon } from "outline-icons";
 import { darken } from "polished";
@@ -24,12 +24,12 @@ import Text from "~/components/Text";
 import Time from "~/components/Time";
 import Tooltip from "~/components/Tooltip";
 import { resolveCommentFactory } from "~/actions/definitions/comments";
-import useActionContext from "~/hooks/useActionContext";
 import useBoolean from "~/hooks/useBoolean";
 import useCurrentUser from "~/hooks/useCurrentUser";
 import CommentMenu from "~/menus/CommentMenu";
 import CommentEditor from "./CommentEditor";
 import { HighlightedText } from "./HighlightText";
+import { useDocumentContext } from "~/components/DocumentContext";
 
 /**
  * Hook to calculate if we should display a timestamp on a comment
@@ -111,6 +111,7 @@ function CommentThreadItem({
   onEditStart,
   onEditEnd,
 }: Props) {
+  const { setFocusedCommentId } = useDocumentContext();
   const { t } = useTranslation();
   const user = useCurrentUser();
   const [data, setData] = React.useState(comment.data);
@@ -154,6 +155,9 @@ function CommentThreadItem({
   const handleUpdate = React.useCallback(
     (attrs: { resolved: boolean }) => {
       onUpdate?.(comment.id, attrs);
+      if ("resolved" in attrs) {
+        setFocusedCommentId(null);
+      }
     },
     [comment.id, onUpdate]
   );
@@ -175,18 +179,18 @@ function CommentThreadItem({
     );
   }, []);
 
-  const handleSubmit = action(async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     try {
       handleSetReadOnly();
-      comment.data = data;
+      runInAction(() => (comment.data = data));
       await comment.save();
     } catch (_err) {
       setEditing();
       toast.error(t("Error updating comment"));
     }
-  });
+  };
 
   const handleCancel = () => {
     setData(comment.data);
@@ -307,14 +311,12 @@ const ResolveButton = ({
   comment: Comment;
   onUpdate: (attrs: { resolved: boolean }) => void;
 }) => {
-  const context = useActionContext();
   const { t } = useTranslation();
 
   return (
     <Tooltip content={t("Mark as resolved")} placement="top">
       <Action
         as={NudeButton}
-        context={context}
         action={resolveCommentFactory({
           comment,
           onResolve: () => onUpdate({ resolved: true }),

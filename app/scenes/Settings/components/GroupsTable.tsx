@@ -59,7 +59,7 @@ export function GroupsTable(props: Props) {
                 <Title onClick={() => handleViewMembers(group)}>
                   {group.name}
                 </Title>
-                <Text type="tertiary" size="small">
+                <Text type="tertiary" size="small" weight="normal">
                   <Trans
                     defaults="{{ count }} member"
                     values={{ count: group.memberCount }}
@@ -67,6 +67,18 @@ export function GroupsTable(props: Props) {
                 </Text>
               </Flex>
             </Flex>
+          ),
+          width: "2fr",
+        },
+        {
+          type: "data",
+          id: "description",
+          header: t("Description"),
+          accessor: (group) => group.description || "",
+          component: (group) => (
+            <Text type="secondary" size="small" weight="normal">
+              {group.description}
+            </Text>
           ),
           width: "2fr",
         },
@@ -94,7 +106,7 @@ export function GroupsTable(props: Props) {
               </GroupMembers>
             );
           },
-          width: "1fr",
+          width: "1.5fr",
           sortable: false,
         },
         {

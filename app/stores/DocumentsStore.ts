@@ -1,7 +1,6 @@
 import invariant from "invariant";
 import compact from "lodash/compact";
 import filter from "lodash/filter";
-import find from "lodash/find";
 import omitBy from "lodash/omitBy";
 import orderBy from "lodash/orderBy";
 import { observable, action, computed, runInAction } from "mobx";
@@ -205,10 +204,10 @@ export default class DocumentsStore extends Store<Document> {
   }
 
   get(id: string): Document | undefined {
-    return (
-      this.data.get(id) ??
-      this.orderedData.find((doc) => id.endsWith(doc.urlId))
-    );
+    return id
+      ? (this.data.get(id) ??
+          this.orderedData.find((doc) => id.endsWith(doc.urlId)))
+      : undefined;
   }
 
   @computed
@@ -460,7 +459,7 @@ export default class DocumentsStore extends Store<Document> {
 
   @action
   prefetchDocument = async (id: string) => {
-    if (!this.data.get(id) && !this.getByUrl(id)) {
+    if (!this.get(id)) {
       return this.fetch(id, {
         prefetch: true,
       });
@@ -745,12 +744,6 @@ export default class DocumentsStore extends Store<Document> {
 
     return subscription?.delete();
   };
-
-  getByUrl = (url = ""): Document | undefined =>
-    find(
-      this.orderedData,
-      (doc) => url.endsWith(doc.urlId) || url.endsWith(doc.id)
-    );
 
   getCollectionForDocument(document: Document) {
     return document.collectionId

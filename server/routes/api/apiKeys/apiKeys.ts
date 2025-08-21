@@ -31,8 +31,14 @@ router.post(
       name,
       userId: user.id,
       expiresAt,
-      scope: scope?.map((s) => (s.startsWith("/api/") ? s : `/api/${s}`)),
+      scope: scope?.map((s) =>
+        s.startsWith("/api/") || s.includes(":")
+          ? s
+          : `/api/${s.replace(/^\//, "")}`
+      ),
     });
+
+    apiKey.user = user;
 
     ctx.body = {
       data: presentApiKey(apiKey),

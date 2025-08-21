@@ -8,6 +8,7 @@ import { useAgent as useFilteringAgent } from "request-filtering-agent";
 import env from "@server/env";
 import Logger from "@server/logging/Logger";
 import { capitalize, defaults } from "lodash";
+import { InternalError } from "@server/errors";
 
 interface UrlWithTunnel extends URL {
   tunnelMethod?: string;
@@ -49,29 +50,42 @@ export const chromeUserAgent =
  */
 export default async function fetch(
   url: string,
-  init?: RequestInit
+  init?: RequestInit & {
+    allowPrivateIPAddress?: boolean;
+  }
 ): Promise<Response> {
   Logger.silly("http", `Network request to ${url}`, init);
 
-  const response = await nodeFetch(url, {
-    ...init,
-    headers: {
-      "User-Agent": outlineUserAgent,
-      ...init?.headers,
-    },
-    agent: buildAgent(url),
-  });
+  const { allowPrivateIPAddress, ...rest } = init || {};
 
-  if (!response.ok) {
-    Logger.silly("http", `Network request failed`, {
-      url,
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers.raw(),
+  try {
+    const response = await nodeFetch(url, {
+      ...rest,
+      headers: {
+        "User-Agent": outlineUserAgent,
+        ...rest?.headers,
+      },
+      agent: buildAgent(url, init),
     });
-  }
 
-  return response;
+    if (!response.ok) {
+      Logger.silly("http", `Network request failed`, {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers.raw(),
+      });
+    }
+
+    return response;
+  } catch (err) {
+    if (!env.isCloudHosted && err.message?.startsWith("DNS lookup")) {
+      throw InternalError(
+        `${err.message}\n\nTo allow this request, add the IP address to the ALLOWED_PRIVATE_IP_ADDRESSES environment variable.`
+      );
+    }
+    throw err;
+  }
 }
 
 /**
@@ -136,11 +150,22 @@ const buildTunnel = (proxy: UrlWithTunnel, options: RequestInit) => {
  * @param options The fetch options
  * @returns An http or https agent configured for the URL
  */
-function buildAgent(url: string, options: RequestInit = {}) {
+function buildAgent(
+  url: string,
+  options: RequestInit & {
+    allowPrivateIPAddress?: boolean;
+  } = {}
+) {
   const agentOptions = defaults(options, DefaultOptions);
   const parsedURL = new URL(url);
   const proxyURL = getProxyForUrl(parsedURL.href);
   let agent: https.Agent | http.Agent | undefined;
+
+  // Add allowIPAddressList from environment configuration
+  const filteringOptions = {
+    ...agentOptions,
+    allowIPAddressList: env.ALLOWED_PRIVATE_IP_ADDRESSES,
+  };
 
   if (proxyURL) {
     const parsedProxyURL = parseProxy(parsedURL, proxyURL);
@@ -163,15 +188,15 @@ function buildAgent(url: string, options: RequestInit = {}) {
         proxyURL.username = parsedProxyURL.username;
         proxyURL.password = parsedProxyURL.password;
       }
-      agent = useFilteringAgent(proxyURL.toString(), agentOptions);
+      agent = useFilteringAgent(proxyURL.toString(), filteringOptions);
     } else {
       // Note request filtering agent does not support https tunneling via a proxy
       agent =
         buildTunnel(parsedProxyURL, agentOptions) ||
-        useFilteringAgent(parsedURL.toString(), agentOptions);
+        useFilteringAgent(parsedURL.toString(), filteringOptions);
     }
   } else {
-    agent = useFilteringAgent(parsedURL.toString(), agentOptions);
+    agent = useFilteringAgent(parsedURL.toString(), filteringOptions);
   }
 
   if (options.signal) {

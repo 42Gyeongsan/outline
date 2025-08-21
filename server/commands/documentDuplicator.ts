@@ -52,11 +52,23 @@ export default async function documentDuplicator({
       DocumentHelper.toProsemirror(document),
       ["comment"]
     ),
+    sourceMetadata: {
+      ...document.sourceMetadata,
+      originalDocumentId: document.id,
+    },
     ...sharedProperties,
   });
 
   duplicated.collection = collection ?? null;
   newDocuments.push(duplicated);
+
+  const originalCollection = document?.collectionId
+    ? await Collection.findByPk(document.collectionId, {
+        attributes: {
+          include: ["documentStructure"],
+        },
+      })
+    : null;
 
   async function duplicateChildDocuments(
     original: Document,
@@ -75,7 +87,12 @@ export default async function documentDuplicator({
       ctx
     );
 
-    for (const childDocument of childDocuments) {
+    const sorted = DocumentHelper.sortDocumentsByStructure(
+      childDocuments,
+      originalCollection?.getDocumentTree(original.id)?.children ?? []
+    ).reverse(); // we have to reverse since the child documents will be added in reverse order
+
+    for (const childDocument of sorted) {
       const duplicatedChildDocument = await documentCreator({
         parentDocumentId: duplicatedDocument.id,
         icon: childDocument.icon,
@@ -85,6 +102,10 @@ export default async function documentDuplicator({
           DocumentHelper.toProsemirror(childDocument),
           ["comment"]
         ),
+        sourceMetadata: {
+          ...childDocument.sourceMetadata,
+          originalDocumentId: childDocument.id,
+        },
         ...sharedProperties,
       });
 

@@ -2,6 +2,7 @@
 // oxlint-disable-next-line import/order
 import environment from "./utils/environment";
 import os from "os";
+import wellKnownServices from "nodemailer/lib/well-known/services.json";
 import {
   validate,
   IsNotEmpty,
@@ -78,7 +79,7 @@ export class Environment {
   /**
    * The url of the database.
    */
-  @IsNotEmpty()
+  @IsOptional()
   @IsUrl({
     require_tld: false,
     allow_underscores: true,
@@ -91,7 +92,7 @@ export class Environment {
     "DATABASE_USER",
     "DATABASE_PASSWORD",
   ])
-  public DATABASE_URL = environment.DATABASE_URL ?? "";
+  public DATABASE_URL = this.toOptionalString(environment.DATABASE_URL);
 
   /**
    * Database host for individual component configuration.
@@ -356,37 +357,7 @@ export class Environment {
    * See https://community.nodemailer.com/2-0-0-beta/setup-smtp/well-known-services/
    */
   @CannotUseWith("SMTP_HOST")
-  @IsInCaseInsensitive([
-    "1und1",
-    "AOL",
-    "DebugMail.io",
-    "DynectEmail",
-    "FastMail",
-    "GandiMail",
-    "Gmail",
-    "Godaddy",
-    "GodaddyAsia",
-    "GodaddyEurope",
-    "hot.ee",
-    "Hotmail",
-    "iCloud",
-    "mail.ee",
-    "Mail.ru",
-    "Mailgun",
-    "Mailjet",
-    "Mandrill",
-    "Naver",
-    "Postmark",
-    "QQ",
-    "QQex",
-    "SendCloud",
-    "SendGrid",
-    "SES",
-    "Sparkpost",
-    "Yahoo",
-    "Yandex",
-    "Zoho",
-  ])
+  @IsInCaseInsensitive(Object.keys(wellKnownServices))
   public SMTP_SERVICE = this.toOptionalString(environment.SMTP_SERVICE);
 
   @Public
@@ -445,6 +416,15 @@ export class Environment {
    * encrypted connection.
    */
   public SMTP_SECURE = this.toBoolean(environment.SMTP_SECURE ?? "true");
+
+  /**
+   * If true then STARTTLS is disabled even if the server supports it.
+   * If false (the default) then STARTTLS is used if server supports it.
+   *
+   * Setting secure to false therefore does not mean that you would not use an
+   * encrypted connection.
+   */
+  public SMTP_DISABLE_STARTTLS = this.toBoolean(environment.SMTP_DISABLE_STARTTLS ?? "false");
 
   /**
    * Dropbox app key for embedding Dropbox files
@@ -754,6 +734,17 @@ export class Environment {
   @IsOptional()
   public WEBHOOK_FAILURE_RATE_THRESHOLD =
     this.toOptionalNumber(environment.WEBHOOK_FAILURE_RATE_THRESHOLD) ?? 80;
+
+  /**
+   * Comma-separated list of IP addresses that are allowed to be accessed
+   * even if they are private IP addresses. This is useful for allowing
+   * connections to OIDC providers or webhooks on private networks.
+   * Example: "10.0.0.1,192.168.1.100"
+   */
+  @IsOptional()
+  public ALLOWED_PRIVATE_IP_ADDRESSES = this.toOptionalCommaList(
+    environment.ALLOWED_PRIVATE_IP_ADDRESSES
+  );
 
   /**
    * The product name
